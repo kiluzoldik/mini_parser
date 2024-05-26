@@ -1,44 +1,29 @@
+import http.client
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from base_func import create_table, insert_product
-import requests
+import time
+
+
+def fetch(url):
+    parsed_url = urlparse(url)
+    connection = http.client.HTTPSConnection(parsed_url.netloc)
+    connection.request("GET", parsed_url.path)
+    response = connection.getresponse()
+    if response.status == 200:
+        return response.read().decode()
+    else:
+        return None
 
 
 def get_data():
+    url = 'https://xn----8sbznhlgig.xn--p1ai/katalog/ventilyaciya/'
 
-    # cookies = {
-    #     'SSESS5c499e5050c481d0dd662f3874ca5c92': '0d81781ab8dc62399522e6d64fce6d57',
-    #     '_ym_uid': '1715628812950650244',
-    #     '_ym_d': '1715628812',
-    #     'cted': 'modId%3Druiqbb8v%3Bya_client_id%3D1715628812950650244',
-    #     '_ym_isad': '1',
-    #     '_ym_visorc': 'w',
-    # }
-
-    # headers = {
-    #     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    #     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-    #     # 'cookie': 'SSESS5c499e5050c481d0dd662f3874ca5c92=0d81781ab8dc62399522e6d64fce6d57; _ym_uid=1715628812950650244; _ym_d=1715628812; cted=modId%3Druiqbb8v%3Bya_client_id%3D1715628812950650244; _ym_isad=1; _ym_visorc=w',
-    #     'priority': 'u=0, i',
-    #     'referer': 'https://xn----8sbznhlgig.xn--p1ai/katalog/arenda-instrumenta-i-tehniki/',
-    #     'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-    #     'sec-ch-ua-mobile': '?0',
-    #     'sec-ch-ua-platform': '"Windows"',
-    #     'sec-fetch-dest': 'document',
-    #     'sec-fetch-mode': 'navigate',
-    #     'sec-fetch-site': 'same-origin',
-    #     'sec-fetch-user': '?1',
-    #     'upgrade-insecure-requests': '1',
-    #     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    # }
-
-    # response = requests.get(
-    #     'https://xn----8sbznhlgig.xn--p1ai/katalog/ventilyaciya/', cookies=cookies, headers=headers)
-
-    # with open('res.html', 'w', encoding='utf-8') as file:
-    #     file.write(response.text)
-
-    with open("res.html", encoding="utf-8") as file:
-        src = file.read()
+    # Получение данных с URL
+    src = fetch(url)
+    if src is None:
+        print("Failed to retrieve the webpage.")
+        return
 
     soup = BeautifulSoup(src, "lxml")
     product_name = soup.find_all("div", class_="product__top-block")
@@ -52,5 +37,8 @@ def get_data():
 
 
 if __name__ == '__main__':
+    start_time = time.time()
     create_table()
     get_data()
+    end_time = time.time()
+    print(f"Время выполнения: {end_time - start_time} секунд")
